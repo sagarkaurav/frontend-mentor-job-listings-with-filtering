@@ -84,7 +84,7 @@
                     <button
                         value="${filter}"
                         class="w-full h-full px-1 text-white bg-teal-500 cursor-pointer tag rounded-tr-md rounded-br-md hover:bg-gray-900">
-                        <img src="./images/icon-remove.svg" alt="close button">
+                        <img class="tag tag-close" src="./images/icon-remove.svg" alt="close button">
                     </button>
                 </div>
                 `;
@@ -137,6 +137,9 @@
             window.addEventListener('click', (e) => {
                 if(e.target.classList.contains('tag')) {
                     let tagValue = e.target.value;
+                    if(e.target.classList.contains('tag-close')) {
+                        tagValue = e.target.parentElement.value;
+                    }
                     if(!filters.includes(tagValue)) {
                         filters.push(tagValue);
                     }
