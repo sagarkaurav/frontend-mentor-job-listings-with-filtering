@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Mentor | Job Listings</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="./images/favicon-32x32.png">
+    <link href="./css/styles.css" rel="stylesheet">
+</head>
+
+<body class="bg-blue-100">
+    <div class="h-32 min-w-full bg-teal-500">
+        <img class="hidden object-fill w-full h-full md:block"
+            src="./images/bg-header-desktop.svg" alt="Header background image">
+        <img class="object-fill w-full h-full md:hidden" src="./images/bg-header-mobile.svg"
+            alt="Header background image">
+    </div>
+    <div class="relative px-12">
+        <div id="search-bar" class="flex justify-between max-w-5xl px-4 py-4 mx-auto mb-12 -mt-8 bg-white rounded-lg shadow-md">
+            <div id="search-items" class="inline-flex flex-wrap">
+            </div>
+            <button id="clear-btn" class="px-2 font-bold hover:underline hover:text-teal-500">clear</button>
+        </div>
+        <div id="listings">
+        </div>
+    </div>
+    <script src="./js/app_state.js" ></script>
+    <script>
+        function makeListingCard(listing) {
+            let isNew = listing.isNew == true ? '<span class="px-2 py-1 ml-2 text-xs font-bold text-center text-white bg-teal-500 rounded-full">NEW!</span>': '';
+            let isFeatured = listing.isFeatured == true ? '<span class="px-2 py-1 ml-2 text-xs font-bold text-center text-white bg-gray-900 rounded-full">FEATURED</span>': ''; 
+            let isFeaturedBorderClass = listing.isFeatured ? 'bg-white border-l-4 border-teal-500': '';
+            let tags = listing.tags.map((tag) => `<button
+            class="inline-block p-2 m-1 text-xs font-bold text-teal-500 bg-teal-100 rounded-md cursor-pointer tag hover:bg-teal-500 hover:text-white" value="${tag}" >${tag}</button>`)
+            let card = `
+            <div
+            class="${isFeaturedBorderClass} relative max-w-5xl px-4 py-12 mx-auto mb-12 md:mb-4 bg-white rounded-lg shadow-md md:flex md:justify-between md:py-4">
+            <div class="md:flex md:w-2/4">
+                <div
+                    class="absolute top-0 w-16 h-16 -mt-6 bg-gray-500 rounded-full md:w-24 md:h-24 md:mt-0 md:relative">
+                    <img class="object-fill w-full h-full" src="${listing.logo}"
+                        alt="${listing.company} logo">
+                </div>
+                <div class="md:px-4">
+                    <div class="inline-flex items-center mb-4">
+                        <h3 class="font-bold text-blue-300">${listing.company}</h3>
+                        <div>
+                            ${isNew}
+                            ${isFeatured}
+                        </div>
+                    </div>
+                    <h5 class="mb-2 text-lg font-bold cursor-pointer hover:text-blue-400">Senior Frontend Developer</h5>
+                    <div class="text-gray-500">
+                        <span>${listing.posted}</span>
+                        <span class="px-2">&#8226;</span>
+                        <span>${listing.roleType}</span>
+                        <span class="px-2">&#8226;</span>
+                        <span>${listing.Country}</span>
+                    </div>
+                </div>
+            </div>
+            <hr class="mt-4" />
+            <div class="flex flex-wrap items-center max-w-lg mt-4 md:mt-0 md:justify-end md:w-2/4">
+                ${tags.join(' ')}
+            </div>
+        </div>
+            `;
+            return card;
+        }
+        function renderSearchItemsList() {
+            let searchItemsDiv = document.getElementById('search-items');
+            searchItemsDiv.innerHTML = '';
+            filters.map((filter) => {
+                let searchItem = `
+                <div class="inline-flex items-center m-1 text-xs">
+                    <span
+                        class="p-2 font-bold text-teal-500 bg-teal-100 cursor-pointer rounded-tl-md rounded-bl-md">${filter}</span>
+                    <button
+                        value="${filter}"
+                        class="w-full h-full px-1 text-white bg-teal-500 cursor-pointer tag rounded-tr-md rounded-br-md hover:bg-gray-900">
+                        <img src="./images/icon-remove.svg" alt="close button">
+                    </button>
+                </div>
+                `;
+                searchItemsDiv.innerHTML += searchItem;
+            });
+        }
+        function manageSearchBar() {
+            let searchBar = document.getElementById('search-bar');
+            if(filters.length == 0) {
+                if(!searchBar.classList.contains('invisible')){
+                    searchBar.classList.add('invisible');
+                    if(searchBar.classList.contains('visible')) {
+                        searchBar.classList.remove('visible');
+                    }
+                }
+            }
+            else{
+                if(!searchBar.classList.contains('visible')){
+                    searchBar.classList.add('visible');
+                    if(searchBar.classList.contains('invisible')) {
+                        searchBar.classList.remove('invisible');
+                    }
+                }
+            }
+            renderSearchItemsList();
+        }
+        function filterAndRenderListings() {
+            let listingsDiv = document.getElementById('listings');
+            let filteredListings = listings.filter((listing) => {
+                if(filters.length == 0) {
+                    return true;
+                }
+                else{
+                    for(i=0; i<filters.length; i++) {
+                        if(listing.tags.includes(filters[i])) {
+                            return true
+                        }
+                    }
+                }
+                return false;
+            });
+            listingsDiv.innerHTML = '';
+            filteredListings.map((listing) => {
+                listingsDiv.innerHTML += makeListingCard(listing);
+            });
+        }
+        window.onload = function () {
+            filterAndRenderListings();
+            manageSearchBar();
+            window.addEventListener('click', (e) => {
+                if(e.target.classList.contains('tag')) {
+                    let tagValue = e.target.value;
+                    if(!filters.includes(tagValue)) {
+                        filters.push(tagValue);
+                    }
+                    else {
+                        filters = filters.filter((filter) => {
+                            if(filter == tagValue) {
+                                return false
+                            }
+                            return true;
+                        });
+                    }
+                    filterAndRenderListings();
+                    manageSearchBar();
+                }
+                if(e.target.id === 'clear-btn') {
+                    filters = [];
+                    filterAndRenderListings();
+                    manageSearchBar();    
+                }
+            })
+        }
+    </script>
+</body>
+
+</html>
